@@ -1,6 +1,6 @@
 
 
-CFLAGS = .include 
+CFLAGS = -Iinclude -I. -pthread -fopenmp
 
 LDFLAGS = -pthread -fopenmp
 
@@ -10,7 +10,21 @@ SRC = consumidor.c produtor.c main.c
 
 OBJ = $(SRC:.c=.o)
 
-.PHONY all clean distclean
+HEADERS = $(SRC:.c=.h)
 
+BIN = trabalho-sistemas-computacao
+
+%.o: %.c $(shell ls include/*.h)
+	gcc $(CFLAGS) -c $< -o $@
+
+.PHONY: all clean distclean
 
 all: $(OBJ)
+	gcc $(OBJ) $(LDFLAGS) -o $(BIN)
+	chmod +x ./$(BIN)
+
+clean:
+	rm *.o $(BIN)
+
+distclean: clean
+	rm -f *.in
