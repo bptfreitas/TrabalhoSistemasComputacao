@@ -95,7 +95,7 @@ void *produtor( void* args ){
 
         fclose( matrix_fd );
 
-        sem_wait( &buffer_produtor->empty );
+        sem_wait( &buffer_produtor->full );
 
         sem_wait( &buffer_produtor->mutex );
 
@@ -107,7 +107,7 @@ void *produtor( void* args ){
 
         sem_post( &buffer_produtor->mutex );
 
-        sem_post( &buffer_produtor->full );
+        sem_post( &buffer_produtor->empty );
 
     }
 
