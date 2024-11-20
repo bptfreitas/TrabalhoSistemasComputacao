@@ -6,7 +6,7 @@ LDFLAGS = -pthread -fopenmp
 
 VPATH = include src
 
-SRC = consumidor.c produtor.c main.c
+SRC = consumidor.c produtor.c cp1.c cp2.c cp3.c main.c libaux.c
 
 OBJ = $(SRC:.c=.o)
 
