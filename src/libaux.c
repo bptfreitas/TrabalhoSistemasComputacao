@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+double matrix_value(int line, int column, int n_cols, double *mat){
+
+    return mat[ line*n_cols + column ];
+
+}
+
 
 void print_matrix( double *mat, int n_lines, int n_columns ){
 
