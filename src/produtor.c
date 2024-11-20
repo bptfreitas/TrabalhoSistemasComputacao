@@ -1,4 +1,5 @@
 #include <produtor.h>
+#include <libaux.h>
 
 #include <defs.h>
 
@@ -6,34 +7,6 @@
 #include <string.h>
 
 #include <stdlib.h>
-
-void print_matrix( double *mat ){
-
-    for (int i = 0; i< MATRIX_LINES; i++){
-
-        for (int j = 0; j < MATRIX_COLS; j++ ){
-            
-            fprintf(stderr, "%.1f ", mat[i*MATRIX_COLS + j] );
-
-        }
-
-        fprintf(stderr, "\n");
-
-    }
-
-}
-
-void strip_newline(char *str){
-
-    for (int i = 0; i < strlen(str); i++ ){
-
-        if ( str[i] == '\n'){
-
-            str[i] = '\0';
-            
-        }
-    }
-}
 
 void *produtor( void* args ){
 
@@ -97,7 +70,9 @@ void *produtor( void* args ){
 
         }
 
-        print_matrix( new_data->A );
+        fprintf(stdout, "\nMatrix A:\n");
+
+        print_matrix( new_data->A, MATRIX_LINES, MATRIX_COLS );
 
         // Reading matrix B ...
         for ( int i =0; i < MATRIX_LINES; i++){
@@ -112,7 +87,8 @@ void *produtor( void* args ){
 
         }
 
-        print_matrix( new_data->B );
+        fprintf(stdout, "\nMatrix B:\n");
+        print_matrix( new_data->B, MATRIX_LINES, MATRIX_COLS );
 
         sem_wait( &buffer_produtor->empty );
 
