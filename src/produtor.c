@@ -53,6 +53,8 @@ void *produtor( void* args ){
 
         S_t *new_data = (S_t*)malloc( sizeof(S_t) );
 
+        new_data->work_type = WORK_NORMAL;
+
         strcpy( new_data->source_filename, filename_buf);
 
         new_data->A = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
