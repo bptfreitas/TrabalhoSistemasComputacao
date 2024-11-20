@@ -14,7 +14,7 @@ for file_index in range(10):
 
     matrix = [ ]
 
-    with open( "entrada" + str(file_index) + ".in" , "w") as entrada:
+    with open( "matrixes" + str(file_index) + ".in" , "w") as entrada:
 
         # 1st matrix: elements are (i+1)* j
 
@@ -42,7 +42,18 @@ for file_index in range(10):
 
             matrix.append( line )
 
-            entrada.write( ' '.join( line ) + "\n" )            
+            entrada.write( ' '.join( line ) + "\n" )
+
+    with open("entrada.in", "w") as entrada:
+
+        for index in range(10):
+            entrada.write( "matrixes" + str(index) + ".in" )
+
+            if index < 10:
+                entrada.write("\n")
+        
+
+          
 
         
 
