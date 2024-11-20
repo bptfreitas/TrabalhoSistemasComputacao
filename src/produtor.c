@@ -99,11 +99,11 @@ void *produtor( void* args ){
 
         sem_wait( &buffer_produtor->mutex );
 
-            int index = buffer_produtor->in % BUFFER_SIZE;
+        int index = buffer_produtor->in % BUFFER_SIZE;
 
-            buffer_produtor->data[ index ] = new_data;
+        buffer_produtor->data[ index ] = new_data;
 
-            buffer_produtor->in ++;
+        buffer_produtor->in ++;
 
         sem_post( &buffer_produtor->mutex );
 
@@ -112,6 +112,30 @@ void *produtor( void* args ){
     }
 
     fclose( entrada_fd );
+
+
+    // Sending work types to end all threads
+    for (int i = 0; i < N_CP1; i++){
+
+        sem_wait( &buffer_produtor->full );
+
+        S_t* new_data = (S_t*)malloc( sizeof(S_t) );
+
+        new_data->work_type = WORK_END_THREAD;
+
+        sem_wait( &buffer_produtor->mutex );
+
+        int index = buffer_produtor->in % BUFFER_SIZE;
+
+        buffer_produtor->data[ index ] = new_data;
+
+        buffer_produtor->in ++;
+
+        sem_post( &buffer_produtor->mutex );
+
+        sem_post( &buffer_produtor->empty );
+
+    }
 
 
 
