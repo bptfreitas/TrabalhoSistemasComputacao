@@ -31,6 +31,8 @@ void *produtor( void* args ){
 
         if (filename == NULL ){
 
+            fprintf(stdout, "\nNo more files to process, exiting");            
+
             break;
 
         }
@@ -57,7 +59,8 @@ void *produtor( void* args ){
 
         new_data->V = (double*)malloc(sizeof(double)*MATRIX_LINES);
 
-        // Reading matrix A ...
+        fprintf(stdout, "\nReading Matrix A ...\n");
+
         for ( int i =0; i < MATRIX_LINES; i++){
 
             for ( int j = 0; j < MATRIX_COLS; j++){
@@ -68,13 +71,12 @@ void *produtor( void* args ){
 
             }
 
-        }
-
-        fprintf(stdout, "\nMatrix A:\n");
+        }    
 
         print_matrix( new_data->A, MATRIX_LINES, MATRIX_COLS );
 
         // Reading matrix B ...
+        fprintf(stdout, "\nReading Matrix B ...\n");
         for ( int i =0; i < MATRIX_LINES; i++){
 
             for ( int j = 0; j < MATRIX_COLS; j++){
@@ -87,7 +89,6 @@ void *produtor( void* args ){
 
         }
 
-        fprintf(stdout, "\nMatrix B:\n");
         print_matrix( new_data->B, MATRIX_LINES, MATRIX_COLS );
 
         sem_wait( &buffer_produtor->empty );
