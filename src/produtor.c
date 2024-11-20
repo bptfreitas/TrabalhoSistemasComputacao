@@ -93,6 +93,8 @@ void *produtor( void* args ){
 
         print_matrix( new_data->B, MATRIX_LINES, MATRIX_COLS );
 
+        fclose( matrix_fd );
+
         sem_wait( &buffer_produtor->empty );
 
         sem_wait( &buffer_produtor->mutex );
@@ -108,6 +110,8 @@ void *produtor( void* args ){
         sem_post( &buffer_produtor->full );
 
     }
+
+    fclose( entrada_fd );
 
 
 
