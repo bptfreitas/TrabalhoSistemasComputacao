@@ -82,6 +82,8 @@ void *produtor( void* args ){
         new_data->B = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
         new_data->C = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
 
+        new_data->V = (double*)malloc(sizeof(double)*MATRIX_LINES);
+
         // Reading matrix A ...
         for ( int i =0; i < MATRIX_LINES; i++){
 
@@ -96,6 +98,35 @@ void *produtor( void* args ){
         }
 
         print_matrix( new_data->A );
+
+        // Reading matrix B ...
+        for ( int i =0; i < MATRIX_LINES; i++){
+
+            for ( int j = 0; j < MATRIX_COLS; j++){
+
+                double *ptr = new_data->B + (i*MATRIX_COLS + j);
+
+                fscanf( matrix_fd , "%lf ", ptr );
+
+            }
+
+        }
+
+        print_matrix( new_data->B );
+
+        sem_wait( &buffer_produtor->empty );
+
+        sem_wait( &buffer_produtor->mutex );
+
+            int index = buffer_produtor->in % BUFFER_SIZE;
+
+            buffer_produtor->data[ index ] = new_data;
+
+            buffer_produtor->in ++;
+
+        sem_post( &buffer_produtor->mutex );
+
+        sem_post( &buffer_produtor->full );
 
     }
 
