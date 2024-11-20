@@ -32,7 +32,7 @@ typedef struct{
 
 typedef struct {
 
-    S_t data[ BUFFER_SIZE ];
+    S_t* data[ BUFFER_SIZE ];
 
     sem_t full, empty, mutex;
 
