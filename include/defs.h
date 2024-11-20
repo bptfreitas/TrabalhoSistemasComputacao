@@ -38,6 +38,10 @@ typedef struct {
 
     int in, out;
 
+    // The structures bellow exist just to prettify thread output
+
+    
+
 } buffer_t;
 
 #endif
