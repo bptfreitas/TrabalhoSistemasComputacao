@@ -115,7 +115,7 @@ void *produtor( void* args ){
 
     fclose( entrada_fd );
 
-
+#if NOT_YET
     // Sending work types to end all threads
 
     for (int i = 0; i < N_CONSUMIDORES; i++){
@@ -206,7 +206,7 @@ void *produtor( void* args ){
 
     }
 
-
+#endif
 
 
 }
