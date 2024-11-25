@@ -9,7 +9,7 @@
 #include <pthread.h>
 
 
-void save_matrix( double *mat, int lines, int cols, FILE* file_d){    
+void save_matrix( double mat[MATRIX_LINES][MATRIX_COLS], int lines, int cols, FILE* file_d){    
 
     for ( int i = 0; i < MATRIX_LINES; i ++){
 
@@ -17,15 +17,13 @@ void save_matrix( double *mat, int lines, int cols, FILE* file_d){
 
         for (int j = 0; i < MATRIX_COLS; j++){
 
-            int index = ( i*MATRIX_COLS + j );
-
-            fprintf( file_d, "%.3f ", mat[ index ]);
+            fprintf( file_d, "%.3f ", mat[ i ][ j ]);
 
         }
     }
 }
 
-void save_vector( double *vector, int size, FILE* file_d){
+void save_vector( double vector[MATRIX_COLS], int size, FILE* file_d){
 
     fprintf( file_d, "\n");
 
@@ -114,12 +112,7 @@ void* consumidor(void* args){
 
         fclose( output_fd );
     
-        // Cleaning memory ... 
-        free( data->A );
-        free( data->B );
-        free( data->C );
-        free( data->V ); 
-
+        // Cleaning memory ...         
         free( data );
 
     }

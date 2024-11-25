@@ -55,13 +55,7 @@ void *produtor( void* args ){
 
         new_data->work_type = WORK_NORMAL;
 
-        strcpy( new_data->source_filename, filename_buf);
-
-        new_data->A = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
-        new_data->B = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
-        new_data->C = (double*)malloc(sizeof(double)*MATRIX_LINES*MATRIX_COLS);
-
-        new_data->V = (double*)malloc(sizeof(double)*MATRIX_LINES);
+        strcpy( new_data->source_filename, filename_buf);        
 
         fprintf(stdout, "\nReading Matrix A ...\n");
 
@@ -69,7 +63,7 @@ void *produtor( void* args ){
 
             for ( int j = 0; j < MATRIX_COLS; j++){
 
-                double *ptr = new_data->A + (i*MATRIX_COLS + j);
+                double *ptr = & ( new_data->A[ i ][ j ] );
 
                 fscanf( matrix_fd , "%lf ", ptr );
 
@@ -83,11 +77,11 @@ void *produtor( void* args ){
         fprintf(stdout, "\nReading Matrix B ...\n");
         for ( int i =0; i < MATRIX_LINES; i++){
 
-            for ( int j = 0; j < MATRIX_COLS; j++){
+            for ( int j = 0; j < MATRIX_COLS; j++){                
 
-                double *ptr = new_data->B + (i*MATRIX_COLS + j);
+                double *ptr = & ( new_data->B[ i ][ j ] );
 
-                fscanf( matrix_fd , "%lf ", ptr );
+                fscanf( matrix_fd , "%lf ", ptr );                
 
             }
 

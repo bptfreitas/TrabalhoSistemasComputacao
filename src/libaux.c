@@ -11,13 +11,13 @@ double matrix_value(int line, int column, int n_cols, double *mat){
 }
 
 
-void print_matrix( double *mat, int n_lines, int n_columns ){
+void print_matrix( double mat[ MATRIX_LINES][MATRIX_COLS], int n_lines, int n_columns ){
 
     for (int i = 0; i< n_lines; i++){
 
         for (int j = 0; j < n_columns; j++ ){
             
-            fprintf(stderr, "%.1f ", mat[i*n_columns + j] );
+            fprintf(stderr, "%.1f ", mat[ i ][ j ] );
 
         }
 

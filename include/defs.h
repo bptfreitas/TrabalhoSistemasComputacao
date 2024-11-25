@@ -30,9 +30,13 @@ typedef struct{
 
     char source_filename[256];
 
-    double *A, *B, *C;
+    double A[ MATRIX_LINES] [MATRIX_COLS];
+
+    double B[ MATRIX_LINES] [MATRIX_COLS];
+
+    double C[ MATRIX_LINES] [MATRIX_COLS];
     
-    double *V;
+    double V[ MATRIX_COLS ];
 
     double E;    
 
