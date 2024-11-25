@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <pthread.h>
+
 
 void save_matrix( double *mat, int lines, int cols, FILE* file_d){    
 
@@ -69,11 +71,11 @@ void* consumidor(void* args){
 
         sem_post( &buffer_do_cp3->mutex );
 
-        char output_filename[256];
+        if ( data->work_type == WORK_END_THREAD_CONSUMER ){
+            fprintf(stdout, "\n[Consumer] Received exit signal ...");
 
-        // strcpy( output_filename, data->source_filename);
-
-        // strcat( data->source_filename, "saida.out" );
+            pthread_exit( NULL );
+        }
 
         FILE *output_fd = fopen( "saida.out", "a");
 
@@ -85,7 +87,7 @@ void* consumidor(void* args){
 
         }
         
-        // Close file after use]
+        // Close file after use
         fprintf( output_fd, "\n================================");
 
         fprintf( output_fd, "\nEntrada: %s", data->source_filename );
@@ -112,7 +114,7 @@ void* consumidor(void* args){
 
         fclose( output_fd );
     
-        // Cleaning freed memory ... 
+        // Cleaning memory ... 
         free( data->A );
         free( data->B );
         free( data->C );

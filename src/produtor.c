@@ -117,13 +117,80 @@ void *produtor( void* args ){
 
 
     // Sending work types to end all threads
+
+    for (int i = 0; i < N_CONSUMIDORES; i++){
+
+        sem_wait( &buffer_produtor->full );
+
+        S_t* new_data = (S_t*)malloc( sizeof(S_t) );
+
+        new_data->work_type = WORK_END_THREAD_CONSUMER;
+
+        sem_wait( &buffer_produtor->mutex );
+
+        int index = buffer_produtor->in % BUFFER_SIZE;
+
+        buffer_produtor->data[ index ] = new_data;
+
+        buffer_produtor->in ++;
+
+        sem_post( &buffer_produtor->mutex );
+
+        sem_post( &buffer_produtor->empty );
+    }
+
+    // CP3
+    for (int i = 0; i < N_CP3; i++){
+
+        sem_wait( &buffer_produtor->full );
+
+        S_t* new_data = (S_t*)malloc( sizeof(S_t) );
+
+        new_data->work_type = WORK_END_THREAD_CP3;
+
+        sem_wait( &buffer_produtor->mutex );
+
+        int index = buffer_produtor->in % BUFFER_SIZE;
+
+        buffer_produtor->data[ index ] = new_data;
+
+        buffer_produtor->in ++;
+
+        sem_post( &buffer_produtor->mutex );
+
+        sem_post( &buffer_produtor->empty );
+    }
+
+    // CP2
+    for (int i = 0; i < N_CP2; i++){
+
+        sem_wait( &buffer_produtor->full );
+
+        S_t* new_data = (S_t*)malloc( sizeof(S_t) );
+
+        new_data->work_type = WORK_END_THREAD_CP2;
+
+        sem_wait( &buffer_produtor->mutex );
+
+        int index = buffer_produtor->in % BUFFER_SIZE;
+
+        buffer_produtor->data[ index ] = new_data;
+
+        buffer_produtor->in ++;
+
+        sem_post( &buffer_produtor->mutex );
+
+        sem_post( &buffer_produtor->empty );
+    }        
+    
+    // Ending CP1 ...
     for (int i = 0; i < N_CP1; i++){
 
         sem_wait( &buffer_produtor->full );
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
-        new_data->work_type = WORK_END_THREAD;
+        new_data->work_type = WORK_END_THREAD_CP1;
 
         sem_wait( &buffer_produtor->mutex );
 
