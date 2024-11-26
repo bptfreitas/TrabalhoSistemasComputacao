@@ -50,10 +50,10 @@ void* consumidor(void* args){
     consumer_id_counter ++;
     pthread_mutex_unlock(&consumer_id_counter_lock);
 
-    fprintf(stdout, "\n[Consumer %d] Starting consumer thread ..." );
+    fprintf(stdout, "\n[Consumer %d] Starting consumer thread ...", consumer_id );
 
     if (consumer_id == 0){
-        fprintf(stdout, "\n[Consumer %d] Truncating 'saida.out' ... " );
+        fprintf(stdout, "\n[Consumer %d] Truncating 'saida.out' ... ", consumer_id );
 
         FILE *fake_ptr = fopen("saida.out", "w");
 
