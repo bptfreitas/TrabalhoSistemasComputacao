@@ -21,4 +21,10 @@ void print_matrix( double mat[ MATRIX_LINES][MATRIX_COLS], int n_lines, int n_co
  */
 void strip_newline(char *str);
 
+
+/**
+ * Pass work to a buffer
+ */
+void pass_work( S_t* work, buffer_t *buffer);
+
 #endif

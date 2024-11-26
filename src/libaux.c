@@ -4,13 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-double matrix_value(int line, int column, int n_cols, double *mat){
-
-    return mat[ line*n_cols + column ];
-
-}
-
-
 void print_matrix( double mat[ MATRIX_LINES][MATRIX_COLS], int n_lines, int n_columns ){
 
     for (int i = 0; i< n_lines; i++){
@@ -38,3 +31,24 @@ void strip_newline(char *str){
         }
     }
 }
+
+void pass_work(S_t *work, buffer_t* buf){
+
+    sem_wait( & buf->full );
+
+    sem_wait( & buf->mutex );
+
+    int in = buf->in % BUFFER_SIZE ;
+
+    buf->data[ in ].data = work;
+
+    buf->in++;
+
+    sem_post( & buf->mutex );
+
+    sem_post( & buf->empty );
+
+
+}
+
+
