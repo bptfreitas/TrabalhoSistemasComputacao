@@ -23,8 +23,15 @@ void strip_newline(char *str);
 
 
 /**
- * Pass work to a buffer
- */
+ * \brief Passs work to a specified buffer 
+ * 
+ * This procedure is meant to be used when any kind of work different
+ * from WORK_NORMAL is received by the current thread
+ * 
+ * \param work A pointer to the work
+ * \param buffer A pointer to the buffer to pass wotrk to
+ * 
+ * */
 void pass_work( S_t* work, buffer_t *buffer);
 
 #endif
