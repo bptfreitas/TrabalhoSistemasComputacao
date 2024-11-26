@@ -40,7 +40,7 @@ void pass_work(S_t *work, buffer_t* buf){
 
     int in = buf->in % BUFFER_SIZE ;
 
-    buf->data[ in ].data = work;
+    buf->data[ in ] = work;
 
     buf->in++;
 
