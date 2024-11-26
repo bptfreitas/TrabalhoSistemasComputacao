@@ -1,6 +1,8 @@
 #include <produtor.h>
 #include <libaux.h>
 
+#include <pthread.h>
+
 #include <defs.h>
 
 #include <stdio.h>
@@ -8,11 +10,21 @@
 
 #include <stdlib.h>
 
+pthread_mutex_t producer_id_lock = PTHREAD_MUTEX_INITIALIZER;
+int producer_id_counter = 0;
+
 void *produtor( void* args ){
 
     buffer_t *buffers = (buffer_t*)args;
 
     buffer_t *buffer_produtor = &buffers[0];
+
+    int producer_id;
+
+    pthread_mutex_lock( & producer_id_lock );
+    producer_id = producer_id_counter;
+    producer_id_counter ++;
+    pthread_mutex_unlock( & producer_id_lock );
 
 
     FILE* entrada_fd = fopen("entrada.in", "r");
@@ -39,7 +51,10 @@ void *produtor( void* args ){
 
         strip_newline( filename_buf );
 
-        fprintf(stdout, "\nReading file '%s'...", filename_buf);
+        fprintf(stdout, 
+            "\n[Producer %d] Reading file '%s'...", 
+            producer_id,
+            filename_buf);
 
         FILE *matrix_fd = fopen( filename_buf, "r" );
 
@@ -57,7 +72,9 @@ void *produtor( void* args ){
 
         strcpy( new_data->source_filename, filename_buf);        
 
-        fprintf(stdout, "\nReading Matrix A ...\n");
+        fprintf(stdout, 
+            "\n[Producer %d] Reading Matrix A ...\n",
+            producer_id);
 
         for ( int i =0; i < MATRIX_LINES; i++){
 
@@ -74,7 +91,10 @@ void *produtor( void* args ){
         print_matrix( new_data->A, MATRIX_LINES, MATRIX_COLS );
 
         // Reading matrix B ...
-        fprintf(stdout, "\nReading Matrix B ...\n");
+        fprintf(stdout, 
+            "\n[Producer %d] Reading Matrix B ...\n",
+            producer_id);
+
         for ( int i =0; i < MATRIX_LINES; i++){
 
             for ( int j = 0; j < MATRIX_COLS; j++){                
