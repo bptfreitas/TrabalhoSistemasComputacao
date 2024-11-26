@@ -95,9 +95,9 @@ void *produtor( void* args ){
 
         sem_wait( &buffer_produtor->mutex );
 
-        int index = buffer_produtor->in % BUFFER_SIZE;
+        int in = buffer_produtor->in % BUFFER_SIZE;
 
-        buffer_produtor->data[ index ] = new_data;
+        buffer_produtor->data[ in ] = new_data;
 
         buffer_produtor->in ++;
 
