@@ -8,6 +8,11 @@
 
 #include <pthread.h>
 
+/**
+ * This
+ */
+pthread_mutex_t consumer_id_counter_lock = PTHREAD_MUTEX_INITIALIZER;
+int consumer_id_counter = 0;
 
 void save_matrix( double mat[MATRIX_LINES][MATRIX_COLS], int lines, int cols, FILE* file_d){    
 
@@ -36,18 +41,24 @@ void save_vector( double vector[MATRIX_COLS], int size, FILE* file_d){
 
 void* consumidor(void* args){
 
-
     buffer_t *buffers = (buffer_t*)args;
 
     buffer_t *buffer_do_cp3 = &buffers[3];
 
-    fprintf(stdout, "\nStarting consumer thread ... " );
+    pthread_mutex_lock(&consumer_id_counter_lock);
+    int consumer_id = consumer_id_counter;
+    consumer_id_counter ++;
+    pthread_mutex_unlock(&consumer_id_counter_lock);
 
-    fprintf(stdout, "\nTruncating saida.out ... " );
+    fprintf(stdout, "\n[Consumer %d] Starting consumer thread ..." );
 
-    FILE *fake_ptr = fopen("saida.out", "w");
+    if (consumer_id == 0){
+        fprintf(stdout, "\n[Consumer %d] Truncating 'saida.out' ... " );
 
-    fclose( fake_ptr );
+        FILE *fake_ptr = fopen("saida.out", "w");
+
+        fclose( fake_ptr );        
+    }    
 
     while (1){
 
@@ -70,7 +81,10 @@ void* consumidor(void* args){
         sem_post( &buffer_do_cp3->mutex );
 
         if ( data->work_type == WORK_END_THREAD_CONSUMER ){
-            fprintf(stdout, "\n[Consumer] Received exit signal ...");
+
+            fprintf(stdout, 
+                "\n[Consumer %d] Received exit signal",
+                consumer_id);
 
             pthread_exit( NULL );
         }
@@ -85,7 +99,7 @@ void* consumidor(void* args){
 
         }
         
-        // Close file after use
+        // Saving output ...
         fprintf( output_fd, "\n================================");
 
         fprintf( output_fd, "\nEntrada: %s", data->source_filename );
