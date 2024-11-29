@@ -4,9 +4,17 @@
 
 #include <semaphore.h>
 
+enum work_t {
+    WORK_NORMAL = 1,
+    WORK_END_THREAD_CP1 = 2,    
+    WORK_END_THREAD_CP2 = 3,
+    WORK_END_THREAD_CP3 = 4,   
+    WORK_END_THREAD_CONSUMER = 5
+};
+
+
 #define MATRIX_LINES 2
 #define MATRIX_COLS 2
-
 
 #define N_PRODUTORES 1
 #define N_CP1 1
@@ -22,11 +30,17 @@ typedef struct{
 
     char source_filename[256];
 
-    double *A, *B, *C;
+    double A[ MATRIX_LINES] [MATRIX_COLS];
+
+    double B[ MATRIX_LINES] [MATRIX_COLS];
+
+    double C[ MATRIX_LINES] [MATRIX_COLS];
     
-    double *V;
+    double V[ MATRIX_COLS ];
 
     double E;    
+
+    enum work_t work_type;
 
 } S_t;
 
@@ -37,11 +51,7 @@ typedef struct {
     sem_t full, empty, mutex;
 
     int in, out;
-
-    // The structures bellow exist just to prettify thread output
-
     
-
 } buffer_t;
 
 #endif
