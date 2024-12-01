@@ -22,7 +22,7 @@ int main(int argc, char **argv){
 
         sem_init( &shared[ i ].mutex, 0, 1 );        
 
-        sem_init( &shared[ i ].empty, 0, 0 );      
+        sem_init( &shared[ i ].empty, 0, 0 );        
 
         shared[ i ].in = 0;
         shared[ i ].out = 0;
@@ -32,36 +32,36 @@ int main(int argc, char **argv){
     pthread_t thread_id[ TOTAL_THREADS ];
     
     int index = 0;
+    
+    for ( int i = 0; i < N_PRODUTORES; i++){
 
-    pthread_create( &thread_id[ index ], NULL, produtor, &shared );
-    index ++;
-
-    for ( int i = 0; i < N_CP1; i++){
-
-        pthread_create( &thread_id[ index ], NULL, cp1, &shared );
+        pthread_create( &thread_id[ index ], NULL, produtor, &shared );
         index ++ ;
 
     }
 
-    for ( int i = 0; i < N_CP2; i++){
 
-        pthread_create( &thread_id[ index ], NULL, cp2, &shared );
-        index ++ ;
+    for ( int i = 0; i < N_CP1; i++){
+         pthread_create( &thread_id[ index ], NULL, cp1, &shared );
+         index ++ ;
+
+    }    
+
+    for ( int i = 0; i < N_CP2; i++){
+         pthread_create( &thread_id[ index ], NULL, cp2, &shared );
+         index ++ ;
 
     }
 
     for ( int i = 0; i < N_CP3; i++){
-
         pthread_create( &thread_id[ index ], NULL, cp3, &shared );
         index ++ ;
-
     }
 
-    for ( int i = 0; i < N_CONSUMIDORES; i++){
 
+    for ( int i = 0; i < N_CONSUMIDORES; i++){
         pthread_create( &thread_id[ index ], NULL, consumidor, &shared );
         index ++ ;
-
     }    
 
     for ( int i = 0; i< index; i++){
@@ -69,6 +69,8 @@ int main(int argc, char **argv){
         pthread_join( thread_id[ i ], NULL);
     
     }
+
+    fprintf(stdout,"\n");
 
     return 0;
 }
