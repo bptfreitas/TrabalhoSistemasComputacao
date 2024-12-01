@@ -4,13 +4,30 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <libaux.h>
+#include <pthread.h>
+
+
+pthread_mutex_t cp2_id_lock = PTHREAD_MUTEX_INITIALIZER;
+int cp2_id_counter = 0;
+
+
 void *cp2(void *args) {
     buffer_t *buffers = (buffer_t *)args;
     buffer_t *buffer_do_cp1 = &buffers[1];
     buffer_t *buffer_para_cp3 = &buffers[2];
 
+
+    int cp2_id;
+
+    pthread_mutex_lock( & cp2_id_lock );
+    cp2_id = cp2_id_counter;
+    cp2_id_counter ++;
+    pthread_mutex_unlock( & cp2_id_lock ); 
+
+    fprintf(stdout, "\n[CP2 %d] Starting CP2 thread...", cp2_id);    
+
     int error_count = 0;
-    fprintf(stdout, "\nStarting CP2 thread...");
 
     while (1) {
         if (sem_wait(&buffer_do_cp1->empty) != 0) {
@@ -46,6 +63,7 @@ void *cp2(void *args) {
             }
             continue;
         }
+
         if (sem_post(&buffer_do_cp1->full) != 0) {
             perror("Failed to unlock buffer (full) in CP2");
             error_count++;
@@ -53,13 +71,35 @@ void *cp2(void *args) {
                 fprintf(stderr, "Too many errors in CP2, exiting thread\n");
                 pthread_exit(NULL);
             }
+            continue;            
+        }
+
+        if (data->work_type == WORK_END_THREAD_CONSUMER) {
+            pass_work(data, buffer_para_cp3);
+            continue;
+        }
+
+        if (data->work_type == WORK_END_THREAD_CP3) {
+            pass_work(data, buffer_para_cp3);
             continue;
         }
 
         if (data->work_type == WORK_END_THREAD_CP2) {
+
+            fprintf(stdout, 
+                "\n[CP2 %d] Received exit signal",
+                cp2_id);
+
+            fflush(stdout);
+
             free(data);
             pthread_exit(NULL);
+
         }
+
+
+        fprintf(stdout, "\n[CP2 %d] Computing sum of columns of Matrix C from '%s'...", cp2_id, data->source_filename );
+
         for (int j = 0; j < MATRIX_COLS; j++) {
             data->V[j] = 0.0;
             for (int i = 0; i < MATRIX_LINES; i++) {

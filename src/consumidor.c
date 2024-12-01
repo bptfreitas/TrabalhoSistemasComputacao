@@ -9,10 +9,14 @@
 #include <pthread.h>
 
 /**
- * This
+ * This is just for fancy printing
  */
 pthread_mutex_t consumer_id_counter_lock = PTHREAD_MUTEX_INITIALIZER;
 int consumer_id_counter = 0;
+
+// Mutex to lock access to file to avoid race conditions on writing data
+pthread_mutex_t file_lock = PTHREAD_MUTEX_INITIALIZER;
+
 
 void save_matrix( double mat[MATRIX_LINES][MATRIX_COLS], int lines, int cols, FILE* file_d){    
 
@@ -20,7 +24,7 @@ void save_matrix( double mat[MATRIX_LINES][MATRIX_COLS], int lines, int cols, FI
 
         fprintf( file_d, "\n");
 
-        for (int j = 0; i < MATRIX_COLS; j++){
+        for (int j = 0; j < MATRIX_COLS; j++){
 
             fprintf( file_d, "%.3f ", mat[ i ][ j ]);
 
@@ -46,9 +50,7 @@ void* consumidor(void* args){
     buffer_t *buffer_do_cp3 = &buffers[3];
 
     pthread_mutex_lock(&consumer_id_counter_lock);
-    int consumer_id = consumer_id_counter;
-    consumer_id_counter ++;
-    pthread_mutex_unlock(&consumer_id_counter_lock);
+    int consumer_id = consumer_id_counter;    
 
     fprintf(stdout, "\n[Consumer %d] Starting consumer thread ...", consumer_id );
 
@@ -58,7 +60,11 @@ void* consumidor(void* args){
         FILE *fake_ptr = fopen("saida.out", "w");
 
         fclose( fake_ptr );        
-    }    
+    }
+
+    consumer_id_counter++;
+
+    pthread_mutex_unlock(&consumer_id_counter_lock);
 
     while (1){
 
@@ -80,16 +86,28 @@ void* consumidor(void* args){
 
         sem_post( &buffer_do_cp3->mutex );
 
+        sem_post( &buffer_do_cp3->full );
+
         if ( data->work_type == WORK_END_THREAD_CONSUMER ){
 
             fprintf(stdout, 
                 "\n[Consumer %d] Received exit signal",
                 consumer_id);
 
+            fflush(stdout);
+
+            free(data);
+
             pthread_exit( NULL );
         }
 
+        pthread_mutex_lock( &file_lock );
+
         FILE *output_fd = fopen( "saida.out", "a");
+
+        fprintf(stdout, "\n[Consumer %d] Saving results of '%s' ... ", 
+            consumer_id,
+            data->source_filename);
 
         if (output_fd == NULL){
 
@@ -125,6 +143,8 @@ void* consumidor(void* args){
         fprintf( output_fd, "\n================================");        
 
         fclose( output_fd );
+
+        pthread_mutex_unlock( &file_lock );
     
         // Cleaning memory ...         
         free( data );

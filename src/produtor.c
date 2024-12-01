@@ -43,7 +43,7 @@ void *produtor( void* args ){
 
         if (filename == NULL ){
 
-            fprintf(stdout, "\nNo more files to process, exiting");            
+            fprintf(stdout, "\n[Produtor %d] No more files to process, exiting", producer_id);
 
             break;
 
@@ -61,7 +61,7 @@ void *produtor( void* args ){
         if ( matrix_fd == NULL ){
             perror("Error!");
 
-            fprintf(stderr, "\nAborting and skipping to next file");
+            fprintf(stderr, "\n[Producer %d] Aborting and skipping to next file", producer_id);
 
             continue;
         }
@@ -70,10 +70,10 @@ void *produtor( void* args ){
 
         new_data->work_type = WORK_NORMAL;
 
-        strcpy( new_data->source_filename, filename_buf);        
+        strcpy( new_data->source_filename, filename_buf);   
 
         fprintf(stdout, 
-            "\n[Producer %d] Reading Matrix A ...\n",
+            "\n[Producer %d] Reading Matrix A ...",
             producer_id);
 
         for ( int i =0; i < MATRIX_LINES; i++){
@@ -92,7 +92,7 @@ void *produtor( void* args ){
 
         // Reading matrix B ...
         fprintf(stdout, 
-            "\n[Producer %d] Reading Matrix B ...\n",
+            "\n[Producer %d] Reading Matrix B ...",
             producer_id);
 
         for ( int i =0; i < MATRIX_LINES; i++){
@@ -129,98 +129,47 @@ void *produtor( void* args ){
 
     fclose( entrada_fd );
 
-#if NOT_YET
     // Sending work types to end all threads
 
     for (int i = 0; i < N_CONSUMIDORES; i++){
-
-        sem_wait( &buffer_produtor->full );
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
         new_data->work_type = WORK_END_THREAD_CONSUMER;
 
-        sem_wait( &buffer_produtor->mutex );
+        pass_work( new_data , buffer_produtor );
 
-        int index = buffer_produtor->in % BUFFER_SIZE;
-
-        buffer_produtor->data[ index ] = new_data;
-
-        buffer_produtor->in ++;
-
-        sem_post( &buffer_produtor->mutex );
-
-        sem_post( &buffer_produtor->empty );
     }
 
-    // CP3
     for (int i = 0; i < N_CP3; i++){
-
-        sem_wait( &buffer_produtor->full );
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
         new_data->work_type = WORK_END_THREAD_CP3;
 
-        sem_wait( &buffer_produtor->mutex );
-
-        int index = buffer_produtor->in % BUFFER_SIZE;
-
-        buffer_produtor->data[ index ] = new_data;
-
-        buffer_produtor->in ++;
-
-        sem_post( &buffer_produtor->mutex );
-
-        sem_post( &buffer_produtor->empty );
+        pass_work( new_data , buffer_produtor );
+        
     }
 
-    // CP2
     for (int i = 0; i < N_CP2; i++){
-
-        sem_wait( &buffer_produtor->full );
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
         new_data->work_type = WORK_END_THREAD_CP2;
 
-        sem_wait( &buffer_produtor->mutex );
+        pass_work( new_data , buffer_produtor );
+        
+    } 
 
-        int index = buffer_produtor->in % BUFFER_SIZE;
-
-        buffer_produtor->data[ index ] = new_data;
-
-        buffer_produtor->in ++;
-
-        sem_post( &buffer_produtor->mutex );
-
-        sem_post( &buffer_produtor->empty );
-    }        
-    
-    // Ending CP1 ...
     for (int i = 0; i < N_CP1; i++){
-
-        sem_wait( &buffer_produtor->full );
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
         new_data->work_type = WORK_END_THREAD_CP1;
 
-        sem_wait( &buffer_produtor->mutex );
-
-        int index = buffer_produtor->in % BUFFER_SIZE;
-
-        buffer_produtor->data[ index ] = new_data;
-
-        buffer_produtor->in ++;
-
-        sem_post( &buffer_produtor->mutex );
-
-        sem_post( &buffer_produtor->empty );
-
-    }
-
-#endif
+        pass_work( new_data , buffer_produtor );
+        
+    } 
 
 
 }
