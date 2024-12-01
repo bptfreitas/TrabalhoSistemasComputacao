@@ -18,11 +18,11 @@ int main(int argc, char **argv){
 
     for (int i = 0; i < 4; i++ ){
 
-        sem_init( &shared[ i ].full, 0, 0 );
+        sem_init( &shared[ i ].full, 0, BUFFER_SIZE );
 
         sem_init( &shared[ i ].mutex, 0, 1 );        
 
-        sem_init( &shared[ i ].empty, 0, BUFFER_SIZE );        
+        sem_init( &shared[ i ].empty, 0, 0 );      
 
         shared[ i ].in = 0;
         shared[ i ].out = 0;

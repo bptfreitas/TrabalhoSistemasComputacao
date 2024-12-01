@@ -11,7 +11,7 @@ void *cp3( void* args ){
 
     buffer_t *buffers = (buffer_t*)args;
 
-    buffer_t *buffer_do_cp2 = &buffers[2];
+    buffer_t *buffer_do_cp3 = &buffers[2];
     
     buffer_t *buffer_para_consumidor = &buffers[3];
 
