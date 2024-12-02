@@ -11,6 +11,9 @@
 pthread_mutex_t cp2_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int cp2_id_counter = 0;
 
+pthread_mutex_t cp2_thread_count_lock = PTHREAD_MUTEX_INITIALIZER;
+int cp2_thread_count = 0;
+
 
 void *cp2(void *args) {
     buffer_t *buffers = (buffer_t *)args;
@@ -24,6 +27,10 @@ void *cp2(void *args) {
     cp2_id = cp2_id_counter;
     cp2_id_counter ++;
     pthread_mutex_unlock( & cp2_id_lock ); 
+
+    pthread_mutex_lock( & cp2_thread_count_lock );
+    cp2_thread_count ++;
+    pthread_mutex_unlock( & cp2_thread_count_lock );
 
     fprintf(stdout, "\n[CP2 %d] Starting CP2 thread...", cp2_id);    
 
@@ -93,6 +100,11 @@ void *cp2(void *args) {
             fflush(stdout);
 
             free(data);
+
+            pthread_mutex_lock( & cp2_thread_count_lock );
+            cp2_thread_count --;
+            pthread_mutex_unlock( & cp2_thread_count_lock );
+
             pthread_exit(NULL);
 
         }

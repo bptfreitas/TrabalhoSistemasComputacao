@@ -10,6 +10,9 @@
 pthread_mutex_t cp3_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int cp3_id_counter = 0;
 
+pthread_mutex_t cp3_thread_count_lock = PTHREAD_MUTEX_INITIALIZER;
+int cp3_thread_count = 0;
+
 void *cp3(void *args) {
 
     buffer_t *buffers = (buffer_t *)args;
@@ -23,8 +26,11 @@ void *cp3(void *args) {
     cp3_id_counter ++;
     pthread_mutex_unlock( & cp3_id_lock ); 
 
-    fprintf(stdout, "\n[CP3 %d] Starting CP3 thread...", cp3_id);    
+    pthread_mutex_lock( & cp3_thread_count_lock );
+    cp3_thread_count ++;
+    pthread_mutex_unlock( & cp3_thread_count_lock );
 
+    fprintf(stdout, "\n[CP3 %d] Starting CP3 thread...", cp3_id);    
 
     int error_count = 0;
 
@@ -86,6 +92,10 @@ void *cp3(void *args) {
             fprintf(stdout, "\n[CP3 %d] Received exit signal", cp3_id);
 
             free(data);
+
+            pthread_mutex_lock( & cp3_thread_count_lock );
+            cp3_thread_count--;
+            pthread_mutex_unlock( & cp3_thread_count_lock );            
 
             pthread_exit(NULL);
         }

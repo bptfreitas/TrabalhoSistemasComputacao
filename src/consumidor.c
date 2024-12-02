@@ -11,6 +11,8 @@
 #include <defs.h>
 #include <cp3.h>
 
+extern pthread_mutex_t job_counter_lock;
+extern int job_counter;
 /**
  * This is just for fancy printing
  */
@@ -20,6 +22,9 @@ int consumer_id_counter = 0;
 // Mutex to lock access to file to avoid race conditions on writing data
 pthread_mutex_t file_lock = PTHREAD_MUTEX_INITIALIZER;
 
+
+pthread_mutex_t consumer_thread_count_lock = PTHREAD_MUTEX_INITIALIZER;
+int consumer_thread_count = 0;
 
 void save_matrix( double mat[MATRIX_LINES][MATRIX_COLS], int lines, int cols, FILE* file_d){    
 
@@ -68,6 +73,10 @@ void* consumidor(void* args){
     consumer_id_counter++;
     pthread_mutex_unlock(&consumer_id_counter_lock);
 
+    pthread_mutex_lock( & consumer_thread_count_lock );
+    consumer_thread_count ++;
+    pthread_mutex_unlock( & consumer_thread_count_lock );
+
     while (1){
 
         sem_wait( &buffer_do_cp3->empty );
@@ -99,6 +108,10 @@ void* consumidor(void* args){
             fflush(stdout);
 
             free(data);
+
+            pthread_mutex_lock( & consumer_thread_count_lock );
+            consumer_thread_count --;
+            pthread_mutex_unlock( & consumer_thread_count_lock );                   
 
             pthread_exit( NULL );
         }
@@ -147,10 +160,14 @@ void* consumidor(void* args){
         fclose( output_fd );
     
         pthread_mutex_unlock( &file_lock );
+
+        pthread_mutex_lock( &job_counter_lock );
+        job_counter-- ;
+        pthread_mutex_unlock( &job_counter_lock );     
     
         // Cleaning memory ...         
         free( data );
-
     }
+
     
 }

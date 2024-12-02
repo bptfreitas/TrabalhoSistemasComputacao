@@ -10,8 +10,25 @@
 
 #include <stdlib.h>
 
+#include <linux/sched.h>
+
 pthread_mutex_t producer_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int producer_id_counter = 0;
+
+pthread_mutex_t job_counter_lock = PTHREAD_MUTEX_INITIALIZER;
+int job_counter = 0;
+
+extern pthread_mutex_t consumer_thread_count_lock;
+extern int consumer_thread_count;
+
+extern pthread_mutex_t cp3_thread_count_lock;
+extern int cp3_thread_count;
+
+extern pthread_mutex_t cp2_thread_count_lock;
+extern int cp2_thread_count;
+
+extern pthread_mutex_t cp1_thread_count_lock;
+extern int cp1_thread_count;
 
 void *produtor( void* args ){
 
@@ -111,6 +128,10 @@ void *produtor( void* args ){
 
         fclose( matrix_fd );
 
+        pthread_mutex_lock( & job_counter_lock );
+        job_counter ++;
+        pthread_mutex_unlock( & job_counter_lock );     
+
         sem_wait( &buffer_produtor->full );
 
         sem_wait( &buffer_produtor->mutex );
@@ -129,8 +150,19 @@ void *produtor( void* args ){
 
     fclose( entrada_fd );
 
-    // Sending work types to end all threads
+    // Waiting current jobs to finish ...
+    while (1){
+        pthread_mutex_lock( & job_counter_lock );
+        if (job_counter > 0){
+            pthread_mutex_unlock( & job_counter_lock );
+            sched_yield();
+            continue;
+        }
+        pthread_mutex_unlock( & job_counter_lock );
+        break;
+    }
 
+    // Sending work types to end the consumer
     for (int i = 0; i < N_CONSUMIDORES; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
@@ -141,6 +173,19 @@ void *produtor( void* args ){
 
     }
 
+    // Waiting current jobs to finish ...
+    while (1){
+        pthread_mutex_lock( & consumer_thread_count_lock );
+        if (consumer_thread_count > 0){
+            pthread_mutex_unlock( & consumer_thread_count_lock );
+            sched_yield();
+            continue;
+        }
+        pthread_mutex_unlock( & consumer_thread_count_lock );
+        break;
+    }    
+
+    // Sending works to end CP3
     for (int i = 0; i < N_CP3; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
@@ -151,6 +196,18 @@ void *produtor( void* args ){
         
     }
 
+    while (1){
+        pthread_mutex_lock( & cp3_thread_count_lock );
+        if (cp3_thread_count > 0){
+            pthread_mutex_unlock( & cp3_thread_count_lock );
+            sched_yield();
+            continue;
+        }
+        pthread_mutex_unlock( & cp3_thread_count_lock );
+        break;
+    }
+
+    // Sending works to end CP2
     for (int i = 0; i < N_CP2; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
@@ -160,7 +217,19 @@ void *produtor( void* args ){
         pass_work( new_data , buffer_produtor );
         
     } 
+    
+    while (1){
+        pthread_mutex_lock( & cp2_thread_count_lock );
+        if (cp2_thread_count > 0){
+            pthread_mutex_unlock( & cp2_thread_count_lock );
+            sched_yield();
+            continue;
+        }
+        pthread_mutex_unlock( & cp2_thread_count_lock );
+        break;
+    }  
 
+    // Sending works to end CP1
     for (int i = 0; i < N_CP1; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
@@ -170,6 +239,17 @@ void *produtor( void* args ){
         pass_work( new_data , buffer_produtor );
         
     } 
+
+    while (1){
+        pthread_mutex_lock( & cp1_thread_count_lock );
+        if (cp1_thread_count > 0){
+            pthread_mutex_unlock( & cp1_thread_count_lock );
+            sched_yield();
+            continue;
+        }
+        pthread_mutex_unlock( & cp1_thread_count_lock );
+        break;
+    }
 
 
 }
