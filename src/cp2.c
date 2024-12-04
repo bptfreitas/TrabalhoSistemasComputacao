@@ -109,7 +109,6 @@ void *cp2(void *args) {
 
         }
 
-
         fprintf(stdout, "\n[CP2 %d] Computing sum of columns of Matrix C from '%s'...", cp2_id, data->source_filename );
 
         #pragma omp parallel for num_threads(2)

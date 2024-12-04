@@ -18,8 +18,12 @@ void *cp1(void *args) {
     buffer_t *buffer_do_produtor = &buffers[0];
     buffer_t *buffer_para_cp2 = &buffers[1];
 
-    int error_count = 0;
+    int error_count = 0, retval;
 
+    char newname[256];
+    char processing[]=".processing";
+
+    // Unique thread id
     int cp1_id;
 
     pthread_mutex_lock( & cp1_id_lock );
@@ -110,8 +114,18 @@ void *cp1(void *args) {
             pthread_exit(NULL);
         }
 
-        //print_matrix( data->A, MATRIX_LINES, MATRIX_COLS );
-        //print_matrix( data->B, MATRIX_LINES, MATRIX_COLS );
+        strcpy(newname, data->source_filename);
+
+        strcpy( &newname[data->extension_pos], processing);
+
+        retval = rename( data->source_filename, newname );
+
+        if (retval == -1){
+            perror(" ");            
+        } else {
+            fprintf(stdout, "\n[CP1 %d] Processing: %s", cp1_id, newname );
+        }        
+
         fprintf(stdout, "\n[CP1 %d] Multiplying matrixes from '%s'...", cp1_id, data->source_filename );
 
         #pragma omp parallel for num_threads(2)

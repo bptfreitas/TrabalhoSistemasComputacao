@@ -31,6 +31,8 @@ typedef struct{
 
     char source_filename[256];
 
+    int extension_pos;
+
     double A[ MATRIX_LINES] [MATRIX_COLS];
 
     double B[ MATRIX_LINES] [MATRIX_COLS];

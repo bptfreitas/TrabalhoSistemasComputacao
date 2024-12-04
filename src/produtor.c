@@ -1,3 +1,7 @@
+#include <unistd.h>
+#include <linux/sched.h>
+#include <sys/inotify.h>
+
 #include <produtor.h>
 #include <libaux.h>
 
@@ -9,8 +13,6 @@
 #include <string.h>
 
 #include <stdlib.h>
-
-#include <linux/sched.h>
 
 pthread_mutex_t producer_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int producer_id_counter = 0;
@@ -30,6 +32,9 @@ extern int cp2_thread_count;
 extern pthread_mutex_t cp1_thread_count_lock;
 extern int cp1_thread_count;
 
+extern char dir_to_monitor[256];
+extern int inotify_fd;
+
 void *produtor( void* args ){
 
     buffer_t *buffers = (buffer_t*)args;
@@ -43,37 +48,59 @@ void *produtor( void* args ){
     producer_id_counter ++;
     pthread_mutex_unlock( & producer_id_lock );
 
+    size_t bufsiz = sizeof(struct inotify_event) + 1000 + 1;
 
-    FILE* entrada_fd = fopen("entrada.in", "r");
+    struct inotify_event* event = malloc(bufsiz);
 
-    if ( entrada_fd == 0 ){
+    char filename[256];
+    char extension[10];
 
-        perror("ERROR!");
-        return NULL;
-    }
+    while ( 1 ){
 
-    char filename_buf[256];
+        size_t nbytes = read(inotify_fd, event, bufsiz);
 
-    while ( ! feof( entrada_fd ) ){
+        int lastdot;
 
-        char *filename = fgets( filename_buf, 256, entrada_fd );
+        if (event->mask & IN_CREATE){
+            fprintf(stdout, "\n[Producer %d] File created: %s",                
+                producer_id,
+                event->name);
 
-        if (filename == NULL ){
+            strcpy( filename, event->name );
 
-            fprintf(stdout, "\n[Produtor %d] No more files to process, exiting", producer_id);
+            // Looking for .ready format ...
+            lastdot = -1;
+            for ( int i =0; i < strlen(filename) ; i++ ){
+                if ( filename[i] == '.' )
+                    lastdot = i;
+            }
 
-            break;
+            if (lastdot == -1){
+                fprintf(stdout, "\n[Producer %d] File has no extension, skipping",
+                    producer_id);
+                continue;
+            }
 
+            strcpy(extension, &filename[ lastdot + 1 ]);
+
+            if ( strcmp( extension, "ready") ){
+                fprintf(stdout, "\n[Producer %d] File extension is not 'ready', skipping",
+                    producer_id);
+                continue;                
+            }    
+            fflush(stdout);
+            
+        } else {
+            fprintf(stdout, "\n[Producer %d] Unrelated event, skipping", producer_id);
+            continue;
         }
-
-        strip_newline( filename_buf );
-
+        
         fprintf(stdout, 
             "\n[Producer %d] Reading file '%s'...", 
             producer_id,
-            filename_buf);
+            filename);
 
-        FILE *matrix_fd = fopen( filename_buf, "r" );
+        FILE *matrix_fd = fopen( filename, "r" );
 
         if ( matrix_fd == NULL ){
             perror("Error!");
@@ -85,9 +112,11 @@ void *produtor( void* args ){
 
         S_t *new_data = (S_t*)malloc( sizeof(S_t) );
 
+        new_data->extension_pos = lastdot;
+
         new_data->work_type = WORK_NORMAL;
 
-        strcpy( new_data->source_filename, filename_buf);   
+        strcpy( new_data->source_filename, filename);   
 
         fprintf(stdout, 
             "\n[Producer %d] Reading Matrix A ...",
@@ -147,8 +176,6 @@ void *produtor( void* args ){
         sem_post( &buffer_produtor->empty );
 
     }
-
-    fclose( entrada_fd );
 
     // Waiting current jobs to finish ...
     while (1){
