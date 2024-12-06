@@ -57,6 +57,13 @@ void* consumidor(void* args){
 
     buffer_t *buffer_do_cp3 = &buffers[3];
 
+    char finalname[256],
+        tmpname[256],
+        processing[]=".processing", 
+        done[]=".done";
+
+    int retval;
+
     pthread_mutex_lock(&consumer_id_counter_lock);
     int consumer_id = consumer_id_counter;
 
@@ -158,8 +165,21 @@ void* consumidor(void* args){
         fprintf( output_fd, "\n================================");        
 
         fclose( output_fd );
+
+        strcpy(tmpname, data->source_filename);
+
+        strcpy( &tmpname[data->extension_pos], 
+            processing );        
+
+        strcpy(finalname, data->source_filename);        
+
+        strcpy( &finalname[data->extension_pos], 
+           done );
+    
+        retval = rename( tmpname, finalname );        
     
         pthread_mutex_unlock( &file_lock );
+        
 
         pthread_mutex_lock( &job_counter_lock );
         job_counter-- ;

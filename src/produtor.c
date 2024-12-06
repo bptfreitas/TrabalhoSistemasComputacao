@@ -81,12 +81,18 @@ void *produtor( void* args ){
                 continue;
             }
 
+            if (lastdot == strlen(filename) -1 ){
+                fprintf(stdout, "\n[Producer %d] '.' is the last character on filename, skipping",
+                    producer_id);
+                continue;
+            }            
+
             strcpy(extension, &filename[ lastdot + 1 ]);
 
             if ( strcmp( extension, "ready") ){
                 fprintf(stdout, "\n[Producer %d] File extension is not 'ready', skipping",
                     producer_id);
-                continue;                
+                continue;
             }    
             fflush(stdout);
             
@@ -108,7 +114,13 @@ void *produtor( void* args ){
             fprintf(stderr, "\n[Producer %d] Aborting and skipping to next file", producer_id);
 
             continue;
+        } else {
+            // Fake closing to force IO synchronization
+            fflush( matrix_fd );
+            fclose( matrix_fd );
         }
+
+        matrix_fd = fopen( filename, "r" );
 
         S_t *new_data = (S_t*)malloc( sizeof(S_t) );
 
