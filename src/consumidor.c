@@ -13,6 +13,9 @@
 
 extern pthread_mutex_t job_counter_lock;
 extern int job_counter;
+
+extern char output_dir[256];
+
 /**
  * This is just for fancy printing
  */
@@ -22,7 +25,7 @@ int consumer_id_counter = 0;
 // Mutex to lock access to file to avoid race conditions on writing data
 pthread_mutex_t file_lock = PTHREAD_MUTEX_INITIALIZER;
 
-
+// Counter of jobs needed to finish
 pthread_mutex_t consumer_thread_count_lock = PTHREAD_MUTEX_INITIALIZER;
 int consumer_thread_count = 0;
 
@@ -60,19 +63,28 @@ void* consumidor(void* args){
     char finalname[256],
         tmpname[256],
         processing[]=".processing", 
-        done[]=".done";
+        done[]=".done",
+        output_file[256];
 
     int retval;
+
+    strcpy( output_file, output_dir);
+
+    strcat( output_file , "/saida.out");
 
     pthread_mutex_lock(&consumer_id_counter_lock);
     int consumer_id = consumer_id_counter;
 
     fprintf(stdout, "\n[Consumer %d] Starting consumer thread ...", consumer_id );
 
+    fprintf(stdout, "\n[Consumer %d] Output file: %s", 
+        consumer_id, 
+        output_file);    
+
     if (consumer_id == 0){
         fprintf(stdout, "\n[Consumer %d] Truncating 'saida.out' ... ", consumer_id );
 
-        FILE *fake_ptr = fopen("saida.out", "w");
+        FILE *fake_ptr = fopen(output_file, "w");
 
         fclose( fake_ptr );        
     }
@@ -125,7 +137,7 @@ void* consumidor(void* args){
 
         pthread_mutex_lock( &file_lock );
 
-        FILE *output_fd = fopen( "saida.out", "a");
+        FILE *output_fd = fopen( output_file, "a");
 
         fprintf(stdout, "\n[Consumer %d] Saving results of '%s' ... ", 
             consumer_id,

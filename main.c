@@ -15,6 +15,7 @@
 #include <consumidor.h>
 
 char dir_to_monitor[256];
+char output_dir[256];
 int inotify_fd;
 
 int main(int argc, char **argv){
@@ -22,27 +23,50 @@ int main(int argc, char **argv){
     buffer_t shared[4];
     int retval;
 
-    if (argc != 2){
-        fprintf(stdout, "Usage: %s [directory to monitor]\n", argv[0]);
+    if (argc != 3){
+        fprintf(stdout, "Usage: %s [directory to monitor] [output folder]\n", argv[0]);
         return -1;
     }
 
-    // Checking if directory exists and it writable and readable
+    // Checking if directory to monitor exists and is writable and readable
     retval = access( argv[1] , F_OK| R_OK | W_OK );
 
+    if (retval == -1){
+        perror("Error with directory to monitor");
+        return -1;
+    }
+
+    // Checks if its a directory by trying to enter it
+    retval = chdir(argv[1]);
+    if (retval == -1){
+        perror("Error");
+        return -1;
+    }
+
+    // Checking if directory to save output exists and is writable and readable
+    retval = access( argv[2] , F_OK| R_OK | W_OK );
+
+    if (retval == -1){
+        perror("Error with output directory");
+        return -1;
+    }    
+
+    // Checks if its a directory by trying to enter it
+    retval = chdir(argv[2]);
+    if (retval == -1){
+        perror("Error");
+        return -1;
+    }
+
+    // All is good, switch to input directory
+    retval = chdir(argv[1]);
     if (retval == -1){
         perror("Error");
         return -1;
     }    
 
-    retval = chdir(argv[1]);
-
-    if (retval == -1){
-        perror("Error");
-        return -1;
-    }
-
     strcpy( dir_to_monitor, argv[1]);
+    strcpy( output_dir, argv[2]);
 
     inotify_fd = inotify_init();
 
