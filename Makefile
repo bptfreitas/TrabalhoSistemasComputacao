@@ -1,6 +1,6 @@
 
 
-CFLAGS = -Iinclude -I. -pthread -fopenmp
+CFLAGS = -Iinclude -I. -pthread -fopenmp -DMATRIX_DIM=10
 
 LDFLAGS = -pthread -fopenmp
 

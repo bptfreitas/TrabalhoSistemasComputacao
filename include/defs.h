@@ -14,8 +14,8 @@ enum work_t {
 
 #define MAX_ERRORS 5
 
-#define MATRIX_LINES 2
-#define MATRIX_COLS 2
+#define MATRIX_LINES MATRIX_DIM
+#define MATRIX_COLS MATRIX_DIM
 
 #define N_PRODUTORES 1
 #define N_CP1 3
