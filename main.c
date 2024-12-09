@@ -39,7 +39,7 @@ int main(int argc, char **argv){
     // Checks if its a directory by trying to enter it
     retval = chdir(argv[1]);
     if (retval == -1){
-        perror("Error");
+        perror("Error with directory to monitor");
         return -1;
     }
 
@@ -54,14 +54,14 @@ int main(int argc, char **argv){
     // Checks if its a directory by trying to enter it
     retval = chdir(argv[2]);
     if (retval == -1){
-        perror("Error");
+        perror("Error with output directory");
         return -1;
     }
 
     // All is good, switch to input directory
     retval = chdir(argv[1]);
     if (retval == -1){
-        perror("Error");
+        perror("Erro with directory to monitor");
         return -1;
     }    
 
