@@ -6,12 +6,12 @@ import random
 try:
     MATRIX_DIM=int( sys.argv[1] )
 except:
-    MATRIX_DIM=2
+    MATRIX_DIM=10
     
 try:
 	N_MATRIXES = int( sys.argv[2] )
 except:
-	N_MATRIXES = 10
+	N_MATRIXES = 50
 
 print("Matrix dimensions:", (MATRIX_DIM, MATRIX_DIM))
 print("Number of matrixes:", N_MATRIXES )
