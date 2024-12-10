@@ -114,6 +114,7 @@ void *cp1(void *args) {
         //print_matrix( data->B, MATRIX_LINES, MATRIX_COLS );
         fprintf(stdout, "\n[CP1 %d] Multiplying matrixes from '%s'...", cp1_id, data->source_filename );
 
+		#pragma omp parallel for num_threads(2)
         for (int i = 0; i < MATRIX_LINES; i++) {
             for (int j = 0; j < MATRIX_COLS; j++) {
                 data->C[i][j] = 0.0;
