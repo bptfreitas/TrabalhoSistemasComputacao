@@ -1,6 +1,7 @@
 
+MATRIX_DIM=10
 
-CFLAGS = -Iinclude -I. -pthread -fopenmp -DMATRIX_DIM=10
+CFLAGS = -Iinclude -I. -pthread -fopenmp -DMATRIX_DIM=$(MATRIX_DIM)
 
 LDFLAGS = -pthread -fopenmp
 
@@ -24,7 +25,7 @@ all: $(OBJ)
 	chmod +x ./$(BIN)
 
 clean:
-	rm *.o $(BIN)
+	rm -f *.o $(BIN)
 
 distclean: clean
 	rm -f *.in
