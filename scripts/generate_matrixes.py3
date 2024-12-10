@@ -7,10 +7,16 @@ try:
     MATRIX_DIM=int( sys.argv[1] )
 except:
     MATRIX_DIM=2
+    
+try:
+	N_MATRIXES = int( sys.argv[2] )
+except:
+	N_MATRIXES = 10
 
 print("Matrix dimensions:", (MATRIX_DIM, MATRIX_DIM))
+print("Number of matrixes:", N_MATRIXES )
 
-for file_index in range(10):
+for file_index in range( N_MATRIXES ):
 
     matrix = [ ]
 
@@ -46,10 +52,10 @@ for file_index in range(10):
 
     with open("entrada.in", "w") as entrada:
 
-        for index in range(10):
+        for index in range(N_MATRIXES):
             entrada.write( "matrixes" + str(index) + ".in" )
 
-            if index < 10:
+            if index < N_MATRIXES:
                 entrada.write("\n")
         
 
