@@ -1,3 +1,6 @@
+#include <signal.h>
+#include <syslog.h>
+
 #include <cp3.h>
 #include <defs.h>
 #include <stdio.h>
@@ -30,7 +33,7 @@ void *cp3(void *args) {
     cp3_thread_count ++;
     pthread_mutex_unlock( & cp3_thread_count_lock );
 
-    fprintf(stdout, "\n[CP3 %d] Starting CP3 thread...", cp3_id);    
+    syslog( LOG_INFO, "[CP3 %d] Starting CP3 thread...", cp3_id);    
 
     int error_count = 0;
 
@@ -39,7 +42,7 @@ void *cp3(void *args) {
             perror("Failed to lock buffer (empty) in CP3");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP3, exiting thread\n");
+                syslog( LOG_ERR, "[CP3 %d] Too many errors in CP3, exiting thread", cp3_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -49,7 +52,7 @@ void *cp3(void *args) {
             perror("Failed to lock buffer (mutex) in CP3");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP3, exiting thread\n");
+                syslog( LOG_ERR, "[CP3 %d] Too many errors in CP3, exiting thread", cp3_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -64,7 +67,7 @@ void *cp3(void *args) {
             perror("Failed to unlock buffer (mutex) in CP3");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP3, exiting thread\n");
+                syslog( LOG_ERR, "[CP3 %d] Too many errors in CP3, exiting thread", cp3_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -74,7 +77,7 @@ void *cp3(void *args) {
             perror("Failed to unlock buffer (full) in CP3");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP3, exiting thread\n");
+                syslog( LOG_ERR, "[CP3 %d] Too many errors in CP3, exiting thread", cp3_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -89,7 +92,7 @@ void *cp3(void *args) {
 
         if (data->work_type == WORK_END_THREAD_CP3) {
 
-            fprintf(stdout, "\n[CP3 %d] Received exit signal", cp3_id);
+            syslog( LOG_INFO, "[CP3 %d] Received exit signal", cp3_id);
 
             free(data);
 
@@ -108,7 +111,7 @@ void *cp3(void *args) {
         data->E = sum;
 
 
-        fprintf(stdout, "\n[CP3 %d] Final sum from '%s': %.3lf", cp3_id, data->source_filename, data->E);
+        syslog( LOG_INFO, "[CP3 %d] Final sum from '%s': %.3lf", cp3_id, data->source_filename, data->E);
 
         pass_work(data, buffer_para_consumidor);
     }
