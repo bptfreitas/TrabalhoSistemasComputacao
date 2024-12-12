@@ -157,8 +157,6 @@ void daemonize() {
 int main(int argc, char **argv) {
 
     // Creating the named pipe for IPC with the controller
-    pid_t pid = fork();
-
     int status;
 
     status = mkfifo( "/tmp/matrix_deamon", 0666 );
