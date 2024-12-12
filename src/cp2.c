@@ -1,3 +1,6 @@
+#include <signal.h>
+#include <syslog.h>
+
 #include <cp2.h>
 #include <defs.h>
 #include <stdio.h>
@@ -32,7 +35,7 @@ void *cp2(void *args) {
     cp2_thread_count ++;
     pthread_mutex_unlock( & cp2_thread_count_lock );
 
-    fprintf(stdout, "\n[CP2 %d] Starting CP2 thread...", cp2_id);    
+    syslog( LOG_INFO, "[CP2 %d] Starting CP2 thread...", cp2_id);    
 
     int error_count = 0;
 
@@ -41,7 +44,7 @@ void *cp2(void *args) {
             perror("Failed to lock buffer (empty) in CP2");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP2, exiting thread\n");
+                syslog( LOG_ERR, "[CP2 %d] Too many errors in CP2, exiting thread", cp2_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -50,7 +53,7 @@ void *cp2(void *args) {
             perror("Failed to lock buffer (mutex) in CP2");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP2, exiting thread\n");
+                syslog( LOG_ERR, "[CP2 %d] Too many errors in CP2, exiting thread", cp2_id);
                 pthread_exit(NULL);
             }
             continue;
@@ -65,7 +68,7 @@ void *cp2(void *args) {
             perror("Failed to unlock buffer (mutex) in CP2");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP2, exiting thread\n");
+                syslog( LOG_ERR, "[CP2 %d] Too many errors in CP2, exiting thread", cp2_id );
                 pthread_exit(NULL);
             }
             continue;
@@ -75,7 +78,7 @@ void *cp2(void *args) {
             perror("Failed to unlock buffer (full) in CP2");
             error_count++;
             if (error_count > MAX_ERRORS) {
-                fprintf(stderr, "Too many errors in CP2, exiting thread\n");
+                syslog( LOG_ERR, "[CP2 %d] Too many errors in CP2, exiting thread", cp2_id);
                 pthread_exit(NULL);
             }
             continue;            
@@ -93,8 +96,8 @@ void *cp2(void *args) {
 
         if (data->work_type == WORK_END_THREAD_CP2) {
 
-            fprintf(stdout, 
-                "\n[CP2 %d] Received exit signal",
+            syslog( LOG_INFO, 
+                "[CP2 %d] Received exit signal",
                 cp2_id);
 
             fflush(stdout);
@@ -109,8 +112,7 @@ void *cp2(void *args) {
 
         }
 
-
-        fprintf(stdout, "\n[CP2 %d] Computing sum of columns of Matrix C from '%s'...", cp2_id, data->source_filename );
+        syslog( LOG_INFO, "[CP2 %d] Computing sum of columns of Matrix C from '%s'...", cp2_id, data->source_filename );
 
 		#pragma omp parallel for num_threads(2)
         for (int j = 0; j < MATRIX_COLS; j++) {
