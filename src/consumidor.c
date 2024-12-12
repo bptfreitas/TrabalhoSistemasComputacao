@@ -1,3 +1,6 @@
+#include <signal.h>
+#include <syslog.h>
+
 #include <consumidor.h>
 
 #include <stdio.h>
@@ -60,10 +63,10 @@ void* consumidor(void* args){
     pthread_mutex_lock(&consumer_id_counter_lock);
     int consumer_id = consumer_id_counter;
 
-    fprintf(stdout, "\n[Consumer %d] Starting consumer thread ...", consumer_id );
+    syslog( LOG_INFO, "[Consumer %d] Starting consumer thread ...", consumer_id );
 
     if (consumer_id == 0){
-        fprintf(stdout, "\n[Consumer %d] Truncating 'saida.out' ... ", consumer_id );
+        syslog( LOG_INFO, "[Consumer %d] Truncating 'saida.out' ... ", consumer_id );
 
         FILE *fake_ptr = fopen("saida.out", "w");
 
@@ -101,8 +104,8 @@ void* consumidor(void* args){
 
         if ( data->work_type == WORK_END_THREAD_CONSUMER ){
 
-            fprintf(stdout, 
-                "\n[Consumer %d] Received exit signal",
+            syslog( LOG_INFO, 
+                "[Consumer %d] Received exit signal",
                 consumer_id);
 
             fflush(stdout);
@@ -120,7 +123,7 @@ void* consumidor(void* args){
 
         FILE *output_fd = fopen( "saida.out", "a");
 
-        fprintf(stdout, "\n[Consumer %d] Saving results of '%s' ... ", 
+        syslog( LOG_INFO, "[Consumer %d] Saving results of '%s' ... ", 
             consumer_id,
             data->source_filename);
 
@@ -157,7 +160,7 @@ void* consumidor(void* args){
 
         fprintf( output_fd, "\n================================");        
 
-        fclose( output_fd );
+        fclose( output_fd );        
     
         pthread_mutex_unlock( &file_lock );
 
