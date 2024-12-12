@@ -1,10 +1,8 @@
-#include <produtor.h>
-#include <libaux.h>
+#include <unistd.h>
+#include <signal.h>
+#include <syslog.h>
 
 #include <pthread.h>
-
-#include <defs.h>
-
 #include <stdio.h>
 #include <string.h>
 
@@ -12,11 +10,20 @@
 
 #include <linux/sched.h>
 
+#include <produtor.h>
+#include <libaux.h>
+
+#include <defs.h>
+
+
 pthread_mutex_t producer_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int producer_id_counter = 0;
 
 pthread_mutex_t job_counter_lock = PTHREAD_MUTEX_INITIALIZER;
 int job_counter = 0;
+
+pthread_mutex_t sigterm_recv_lock = PTHREAD_MUTEX_INITIALIZER;
+int sigterm_recv = 0;
 
 extern pthread_mutex_t consumer_thread_count_lock;
 extern int consumer_thread_count;
@@ -29,6 +36,7 @@ extern int cp2_thread_count;
 
 extern pthread_mutex_t cp1_thread_count_lock;
 extern int cp1_thread_count;
+
 
 void *produtor( void* args ){
 
@@ -56,11 +64,21 @@ void *produtor( void* args ){
 
     while ( ! feof( entrada_fd ) ){
 
+        pthread_mutex_lock( & sigterm_recv_lock );
+        if ( sigterm_recv == 1 ){
+            // SIGTERM Received, break loop
+            syslog(LOG_INFO, "[Produtor %d] SIGTERM received: stopping input processing", producer_id );
+            pthread_mutex_unlock( & sigterm_recv_lock );
+            break;
+        } else {
+            pthread_mutex_unlock( & sigterm_recv_lock );
+        }
+
         char *filename = fgets( filename_buf, 256, entrada_fd );
 
         if (filename == NULL ){
 
-            fprintf(stdout, "\n[Produtor %d] No more files to process, exiting", producer_id);
+            syslog( LOG_INFO, "[Produtor %d] No more files to process, exiting", producer_id);
 
             break;
 
@@ -68,8 +86,8 @@ void *produtor( void* args ){
 
         strip_newline( filename_buf );
 
-        fprintf(stdout, 
-            "\n[Producer %d] Reading file '%s'...", 
+        syslog( LOG_INFO, 
+            "[Producer %d] Reading file '%s'...", 
             producer_id,
             filename_buf);
 
@@ -78,7 +96,7 @@ void *produtor( void* args ){
         if ( matrix_fd == NULL ){
             perror("Error!");
 
-            fprintf(stderr, "\n[Producer %d] Aborting and skipping to next file", producer_id);
+            syslog( LOG_INFO, "[Producer %d] Aborting and skipping to next file", producer_id);
 
             continue;
         }
@@ -89,8 +107,8 @@ void *produtor( void* args ){
 
         strcpy( new_data->source_filename, filename_buf);   
 
-        fprintf(stdout, 
-            "\n[Producer %d] Reading Matrix A ...",
+        syslog( LOG_INFO, 
+            "[Producer %d] Reading Matrix A ...",
             producer_id);
 
         for ( int i =0; i < MATRIX_LINES; i++){
@@ -108,8 +126,8 @@ void *produtor( void* args ){
         print_matrix( new_data->A, MATRIX_LINES, MATRIX_COLS );
 
         // Reading matrix B ...
-        fprintf(stdout, 
-            "\n[Producer %d] Reading Matrix B ...",
+        syslog( LOG_INFO, 
+            "[Producer %d] Reading Matrix B ...",
             producer_id);
 
         for ( int i =0; i < MATRIX_LINES; i++){
