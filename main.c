@@ -101,14 +101,6 @@ void daemonize() {
     signal(SIGTERM, signal_handler);
     signal(SIGKILL, signal_handler);
 
-
-    // Barrier to wait for all thread to end;
-    pthread_barrier_init( &end_barrier, 0, 2);
-
-    // Creating threads in detached mode since any number of threads can now exist, thus join is not a end parameter anymore
-    pthread_attr_t thread_attr;
-    pthread_attr_setdetachstate( &thread_attr , PTHREAD_CREATE_DETACHED );
-
     for (int i = 0; i < 4; i++) {
         sem_init(&shared[i].full, 0, BUFFER_SIZE);
         sem_init(&shared[i].mutex, 0, 1);
@@ -117,35 +109,37 @@ void daemonize() {
         shared[i].out = 0;
     }
 
+    pthread_barrier_init( &end_barrier, 0 , 2);
+
     pthread_t thread_id[TOTAL_THREADS];
     int index = 0;
     // Criandoa s threads
     for (int i = 0; i < N_PRODUTORES; i++) {
-        pthread_create(&thread_id[index], &thread_attr, produtor, &shared);
+        pthread_create(&thread_id[index], NULL, produtor, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP1; i++) {
-        pthread_create(&thread_id[index], &thread_attr, cp1, &shared);
+        pthread_create(&thread_id[index], NULL, cp1, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP2; i++) {
-        pthread_create(&thread_id[index], &thread_attr, cp2, &shared);
+        pthread_create(&thread_id[index], NULL, cp2, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP3; i++) {
-        pthread_create(&thread_id[index], &thread_attr, cp3, &shared);
+        pthread_create(&thread_id[index], NULL, cp3, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CONSUMIDORES; i++) {
-        pthread_create(&thread_id[index], &thread_attr, consumidor, &shared);
+        pthread_create(&thread_id[index], NULL, consumidor, &shared);
         index++;
     }
 
-    pthread_create(&thread_id[index], &thread_attr, thread_controller, &shared);
+    pthread_create(&thread_id[index], NULL, thread_controller, &shared);
     index++;
 
     pthread_barrier_wait( &end_barrier );
