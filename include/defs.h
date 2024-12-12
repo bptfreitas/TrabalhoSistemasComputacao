@@ -12,16 +12,21 @@ enum work_t {
     WORK_END_THREAD_CONSUMER = 5
 };
 
+#define MAX_THREADS 5
+
 #define MAX_ERRORS 5
 
 #define MATRIX_LINES MATRIX_DIM
 #define MATRIX_COLS MATRIX_DIM
+
 
 #define N_PRODUTORES 1
 #define N_CP1 3
 #define N_CP2 3
 #define N_CP3 3
 #define N_CONSUMIDORES 1
+
+#define N_THREAD_CONTROLLER 1
 
 #define TOTAL_THREADS ( N_PRODUTORES + N_CP1 + N_CP2 + N_CP3 + N_CONSUMIDORES)
 

@@ -37,6 +37,7 @@ extern int cp2_thread_count;
 extern pthread_mutex_t cp1_thread_count_lock;
 extern int cp1_thread_count;
 
+extern pthread_barrier_t end_barrier;
 
 void *produtor( void* args ){
 
@@ -268,6 +269,8 @@ void *produtor( void* args ){
         pthread_mutex_unlock( & cp1_thread_count_lock );
         break;
     }
+
+    pthread_barrier_wait( &end_barrier );
 
 
 }

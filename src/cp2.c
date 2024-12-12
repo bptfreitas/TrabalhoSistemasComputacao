@@ -10,7 +10,6 @@
 #include <libaux.h>
 #include <pthread.h>
 
-
 pthread_mutex_t cp2_id_lock = PTHREAD_MUTEX_INITIALIZER;
 int cp2_id_counter = 0;
 

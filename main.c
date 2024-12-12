@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <syslog.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <pthread.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -14,19 +17,47 @@
 #include <cp2.h>
 #include <cp3.h>
 #include <consumidor.h>
+#include <thread_controller.h>
 
 volatile sig_atomic_t keep_running = 1;
 volatile sig_atomic_t terminate_after_tasks = 0;
+
+extern pthread_mutex_t sigterm_recv_lock;
+extern int sigterm_recv;
+extern int command_fd;
+
+pthread_barrier_t end_barrier;
+
+buffer_t shared[4];
 
 void signal_handler(int sig) {
     switch (sig) {
         case SIGTERM:
             syslog(LOG_INFO, "SIGTERM received: Will terminate after completing all tasks.");
+
+            pthread_mutex_lock( &sigterm_recv_lock );
+            sigterm_recv = 1;
+            pthread_mutex_unlock( &sigterm_recv_lock );
+
             terminate_after_tasks = 1;
             keep_running = 0;
+
+            // closing named pipe
+            close(command_fd);
+
+            //Limpando semáforos
+            for (int i = 0; i < 4; i++) {
+                sem_destroy(&shared[i].full);
+                sem_destroy(&shared[i].mutex);
+                sem_destroy(&shared[i].empty);
+            } 
+
             break;
+
         case SIGKILL:
             syslog(LOG_INFO, "SIGKILL received: Terminating immediately.");
+            close(command_fd);
+
             exit(EXIT_FAILURE);
         default:
             syslog(LOG_WARNING, "Unhandled signal %d received.", sig);
@@ -70,7 +101,13 @@ void daemonize() {
     signal(SIGTERM, signal_handler);
     signal(SIGKILL, signal_handler);
 
-    buffer_t shared[4];
+
+    // Barrier to wait for all thread to end;
+    pthread_barrier_init( &end_barrier, 0, 2);
+
+    // Creating threads in detached mode since any number of threads can now exist, thus join is not a end parameter anymore
+    pthread_attr_t thread_attr;
+    pthread_attr_setdetachstate( &thread_attr , PTHREAD_CREATE_DETACHED );
 
     for (int i = 0; i < 4; i++) {
         sem_init(&shared[i].full, 0, BUFFER_SIZE);
@@ -84,45 +121,47 @@ void daemonize() {
     int index = 0;
     // Criandoa s threads
     for (int i = 0; i < N_PRODUTORES; i++) {
-        pthread_create(&thread_id[index], NULL, produtor, &shared);
+        pthread_create(&thread_id[index], &thread_attr, produtor, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP1; i++) {
-        pthread_create(&thread_id[index], NULL, cp1, &shared);
+        pthread_create(&thread_id[index], &thread_attr, cp1, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP2; i++) {
-        pthread_create(&thread_id[index], NULL, cp2, &shared);
+        pthread_create(&thread_id[index], &thread_attr, cp2, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CP3; i++) {
-        pthread_create(&thread_id[index], NULL, cp3, &shared);
+        pthread_create(&thread_id[index], &thread_attr, cp3, &shared);
         index++;
     }
 
     for (int i = 0; i < N_CONSUMIDORES; i++) {
-        pthread_create(&thread_id[index], NULL, consumidor, &shared);
+        pthread_create(&thread_id[index], &thread_attr, consumidor, &shared);
         index++;
     }
 
-    for (int i = 0; i < index; i++) {
-        pthread_join(thread_id[i], NULL);
-    }
+    pthread_create(&thread_id[index], &thread_attr, thread_controller, &shared);
+    index++;
 
-    //Limpando semáforos
-    for (int i = 0; i < 4; i++) {
-        sem_destroy(&shared[i].full);
-        sem_destroy(&shared[i].mutex);
-        sem_destroy(&shared[i].empty);
-    }
+    pthread_barrier_wait( &end_barrier );
 
     syslog(LOG_INFO, "Daemon terminated.");
     closelog();
 }
 
 int main(int argc, char **argv) {
+
+    // Creating the named pipe for IPC with the controller
+    pid_t pid = fork();
+
+    int status;
+
+    status = mkfifo( "/tmp/matrix_deamon", 0666 );
+
     daemonize();
 }
