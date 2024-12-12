@@ -1,3 +1,6 @@
+#include <signal.h>
+#include <syslog.h>
+
 #include <cp1.h>
 #include <defs.h>
 #include <stdio.h>
@@ -31,7 +34,7 @@ void *cp1(void *args) {
     cp1_thread_count ++;
     pthread_mutex_unlock( & cp1_thread_count_lock );     
 
-    fprintf(stdout, "\n[CP1 %d] Starting CP1 thread...", cp1_id);
+    syslog( LOG_INFO, "[CP1 %d] Starting CP1 thread...", cp1_id);
 
     while (1) {
         if (sem_wait(&buffer_do_produtor->empty) != 0) {
@@ -96,8 +99,8 @@ void *cp1(void *args) {
 
         if (data->work_type == WORK_END_THREAD_CP1) {
 
-            fprintf(stdout, 
-                "\n[CP1 %d] Received exit signal",
+            syslog( LOG_INFO, 
+                "[CP1 %d] Received exit signal",
                 cp1_id);
 
             fflush(stdout);
@@ -112,7 +115,7 @@ void *cp1(void *args) {
 
         //print_matrix( data->A, MATRIX_LINES, MATRIX_COLS );
         //print_matrix( data->B, MATRIX_LINES, MATRIX_COLS );
-        fprintf(stdout, "\n[CP1 %d] Multiplying matrixes from '%s'...", cp1_id, data->source_filename );
+        syslog( LOG_INFO, "[CP1 %d] Multiplying matrixes from '%s'...", cp1_id, data->source_filename );
 
 		#pragma omp parallel for num_threads(2)
         for (int i = 0; i < MATRIX_LINES; i++) {
