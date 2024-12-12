@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <syslog.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <pthread.h>
 #include <defs.h>
 #include <produtor.h>
