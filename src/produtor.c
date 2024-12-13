@@ -177,6 +177,10 @@ void *produtor( void* args ){
 
     if (controller_fd > 0 ){
 
+        syslog( LOG_WARNING, 
+            "[Producer %d] Sending 'stop' command to thread controller ...",
+            producer_id);
+
         char msg[] = "stop\n";
 
         write( controller_fd , msg, strlen( msg ) + 1 );
