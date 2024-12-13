@@ -1,5 +1,5 @@
 
-MATRIX_DIM=1000
+MATRIX_DIM=500
 
 CFLAGS = -Iinclude -I. -pthread -fopenmp -DMATRIX_DIM=$(MATRIX_DIM)
 
