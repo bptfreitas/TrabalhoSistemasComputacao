@@ -55,6 +55,8 @@ void* thread_controller(void* args){
 
     char command[256];
 
+    syslog( LOG_INFO, "[Thread controller] Listening to thread commands");
+
     while (1){
 
         nbytes_recv = read( command_fd, &command, 256);
