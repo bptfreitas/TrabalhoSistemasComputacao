@@ -28,6 +28,8 @@ extern int command_fd;
 
 pthread_barrier_t end_barrier;
 
+pthread_t thread_controller_id;
+
 buffer_t shared[4];
 
 void signal_handler(int sig) {
@@ -139,7 +141,7 @@ void daemonize() {
         index++;
     }
 
-    pthread_create(&thread_id[index], NULL, thread_controller, &shared);
+    pthread_create(&thread_controller_id, NULL, thread_controller, &shared);
     index++;
 
     pthread_barrier_wait( &end_barrier );

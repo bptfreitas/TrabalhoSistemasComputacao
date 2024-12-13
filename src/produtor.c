@@ -41,6 +41,9 @@ extern int cp1_thread_count;
 extern pthread_barrier_t stop_controller_barrier;
 extern pthread_barrier_t end_barrier;
 
+extern pthread_t thread_controller_id;
+
+extern int command_fd;
 
 void *produtor( void* args ){
 
@@ -173,21 +176,17 @@ void *produtor( void* args ){
     fclose( entrada_fd );
 
     // Stopping thread controller ...
-    int controller_fd = open("/tmp/matrix_deamon", O_WRONLY );
 
-    if (controller_fd > 0 ){
 
-        syslog( LOG_WARNING, 
+        syslog( LOG_INFO, 
             "[Producer %d] Sending 'stop' command to thread controller ...",
             producer_id);
 
         char msg[] = "stop\n";
 
-        write( controller_fd , msg, strlen( msg ) + 1 );
-
-        close( controller_fd );
-
-        pthread_barrier_wait( &stop_controller_barrier );
+    pthread_cancel( thread_controller_id );
+        
+#if 0        
     } else {
 
         syslog( LOG_WARNING, 
@@ -195,6 +194,7 @@ void *produtor( void* args ){
             producer_id);
 
     }
+#endif    
 
     // Waiting current jobs to finish ...
     while (1){

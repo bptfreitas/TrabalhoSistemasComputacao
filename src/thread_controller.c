@@ -43,7 +43,7 @@ void* thread_controller(void* args){
 
     pthread_barrier_init( &stop_controller_barrier, 0, 2 );
 
-    command_fd = open("/tmp/matrix_deamon", O_RDONLY);
+    command_fd = open("/tmp/matrix_deamon", O_RDWR | O_TRUNC ) ;
 
     int nbytes_recv;
 
@@ -187,6 +187,8 @@ void* thread_controller(void* args){
 
 
     }
+
+    close( command_fd );
 
     pthread_barrier_destroy( &stop_controller_barrier );
 
