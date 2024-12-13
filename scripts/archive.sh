@@ -10,6 +10,6 @@ for file in $(ls *.in); do
 
 done
 
-echo $adds
+#echo $adds
 
-git archive --format=zip $adds -o $OUTPUT HEAD
+git archive --format=zip --prefix=$1/ $adds -o $OUTPUT.zip HEAD
