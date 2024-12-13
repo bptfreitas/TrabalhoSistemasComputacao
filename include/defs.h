@@ -12,7 +12,7 @@ enum work_t {
     WORK_END_THREAD_CONSUMER = 5
 };
 
-#define MAX_THREADS 5
+#define MAX_THREADS 10
 
 #define MAX_ERRORS 5
 
