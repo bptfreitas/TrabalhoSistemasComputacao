@@ -18,11 +18,18 @@
 volatile sig_atomic_t keep_running = 1;
 volatile sig_atomic_t terminate_after_tasks = 0;
 
+extern pthread_mutex_t sigterm_recv_lock;
+extern int sigterm_recv;
+
 void signal_handler(int sig) {
     switch (sig) {
         case SIGTERM:
             syslog(LOG_INFO, "SIGTERM received: Will terminate after completing all tasks.");
-            terminate_after_tasks = 1;
+
+            pthread_mutex_lock (&sigterm_recv_lock);
+            sigterm_recv = 1;
+            pthread_mutex_unlock (&sigterm_recv_lock);
+            
             keep_running = 0;
             break;
         case SIGKILL:

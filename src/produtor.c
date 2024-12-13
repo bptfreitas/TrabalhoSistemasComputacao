@@ -38,6 +38,9 @@ extern pthread_mutex_t cp1_thread_count_lock;
 extern int cp1_thread_count;
 
 
+extern 
+
+
 void *produtor( void* args ){
 
     buffer_t *buffers = (buffer_t*)args;
