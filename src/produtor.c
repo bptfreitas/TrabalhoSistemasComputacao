@@ -66,6 +66,8 @@ void *produtor( void* args ){
                 producer_id,
                 event->name);
 
+            sync();
+
             strcpy( filename, event->name );
 
             // Looking for .ready format ...
