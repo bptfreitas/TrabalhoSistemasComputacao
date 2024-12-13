@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <syslog.h>
+#include <fcntl.h>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -37,7 +38,9 @@ extern int cp2_thread_count;
 extern pthread_mutex_t cp1_thread_count_lock;
 extern int cp1_thread_count;
 
+extern pthread_barrier_t stop_controller_barrier;
 extern pthread_barrier_t end_barrier;
+
 
 void *produtor( void* args ){
 
@@ -169,6 +172,26 @@ void *produtor( void* args ){
 
     fclose( entrada_fd );
 
+    // Stopping thread controller ...
+    int controller_fd = open("/tmp/matrix_deamon", O_WRONLY );
+
+    if (controller_fd > 0 ){
+
+        char msg[] = "stop\n";
+
+        write( controller_fd , msg, strlen( msg ) + 1 );
+
+        close( controller_fd );
+
+        pthread_barrier_wait( &stop_controller_barrier );
+    } else {
+
+        syslog( LOG_WARNING, 
+            "[Producer %d] Couldn't send 'stop' command to thread controller!",
+            producer_id);
+
+    }
+
     // Waiting current jobs to finish ...
     while (1){
         pthread_mutex_lock( & job_counter_lock );
@@ -181,8 +204,11 @@ void *produtor( void* args ){
         break;
     }
 
+    pthread_mutex_lock( &consumer_thread_count_lock );
+    int nthreads = consumer_thread_count;
+    pthread_mutex_unlock( &consumer_thread_count_lock );
     // Sending work types to end the consumer
-    for (int i = 0; i < N_CONSUMIDORES; i++){
+    for (int i = 0; i < nthreads; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
@@ -204,8 +230,12 @@ void *produtor( void* args ){
         break;
     }    
 
+
+    pthread_mutex_lock( &cp3_thread_count_lock );
+    nthreads = cp3_thread_count;
+    pthread_mutex_unlock( &cp3_thread_count_lock );
     // Sending works to end CP3
-    for (int i = 0; i < N_CP3; i++){
+    for (int i = 0; i < nthreads; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
@@ -226,8 +256,12 @@ void *produtor( void* args ){
         break;
     }
 
+
     // Sending works to end CP2
-    for (int i = 0; i < N_CP2; i++){
+    pthread_mutex_lock( &cp2_thread_count_lock );
+    nthreads = cp2_thread_count;
+    pthread_mutex_unlock( &cp2_thread_count_lock );  
+    for (int i = 0; i < nthreads; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 
@@ -249,7 +283,10 @@ void *produtor( void* args ){
     }  
 
     // Sending works to end CP1
-    for (int i = 0; i < N_CP1; i++){
+    pthread_mutex_lock( &cp1_thread_count_lock );
+    nthreads = cp1_thread_count;
+    pthread_mutex_unlock( &cp1_thread_count_lock );    
+    for (int i = 0; i < nthreads; i++){
 
         S_t* new_data = (S_t*)malloc( sizeof(S_t) );
 

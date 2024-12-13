@@ -30,6 +30,8 @@ extern int cp3_thread_count;
 
 int command_fd;
 
+pthread_barrier_t stop_controller_barrier;
+
 extern buffer_t shared[4];
 
 void create_new_thread( char *type, pthread_mutex_t *mutex, int *counter, void* (*fn) (void*) ){
@@ -38,6 +40,8 @@ void create_new_thread( char *type, pthread_mutex_t *mutex, int *counter, void* 
 }
 
 void* thread_controller(void* args){
+
+    pthread_barrier_init( &stop_controller_barrier, 0, 2 );
 
     command_fd = open("/tmp/matrix_deamon", O_RDONLY);
 
@@ -60,6 +64,15 @@ void* thread_controller(void* args){
             strip_newline( command );
 
             syslog( LOG_INFO, "[Thread controller] Command received: '%s'", command);
+
+            if ( ! strcmp( command, "stop" ) ){
+
+                syslog( LOG_INFO, "[Thread controller] Exiting thread" );
+
+                pthread_barrier_wait( &stop_controller_barrier );
+
+                break;
+            }
 
             if ( ! strcmp( command, "-c cp1" ) ){
 
@@ -172,6 +185,8 @@ void* thread_controller(void* args){
 
 
     }
+
+    pthread_barrier_destroy( &stop_controller_barrier );
 
 
 }
